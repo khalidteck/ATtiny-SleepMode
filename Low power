@@ -1,0 +1,38 @@
+#include <avr/sleep.h> 
+#include <avr/wdt.h>
+
+void setup() {
+  pinMode(0, OUTPUT);// pin 5 Attiny85 (Led) 
+  ADCSRA &= ~(1<<ADEN); //Disable ADC
+  set_sleep_mode(SLEEP_MODE_PWR_DOWN); 
+  sleep_enable();
+}
+
+ISR(WDT_vect) {
+  
+}
+
+void loop() {
+  setup_watchdog(8); //8=4sec
+  sleep_mode(); 
+  for(int j=0;j<5;j++)
+  {
+    digitalWrite(0, HIGH);
+    delay(20);
+    digitalWrite(0, LOW);
+    delay(30);
+  }
+}
+
+
+void setup_watchdog(int timerPrescaler) {
+
+  if (timerPrescaler > 9 ) timerPrescaler = 9; 
+  byte bb = timerPrescaler & 7; 
+  if (timerPrescaler > 7) bb |= (1<<5); 
+  
+  MCUSR &= ~(1<<WDRF); 
+  WDTCR |= (1<<WDCE) | (1<<WDE); 
+  WDTCR = bb; 
+  WDTCR |= _BV(WDIE); 
+}
